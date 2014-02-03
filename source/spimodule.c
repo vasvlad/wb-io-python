@@ -3,7 +3,7 @@
 
  * Modified for BBIO Author Justin Cooper
 
- * This file incorporates work covered by the following copyright and 
+ * This file incorporates work covered by the following copyright and
  * permission notice, all modified code adopts the original license:
  *
  * spimodule.c - Python bindings for Linux SPI access through spidev
@@ -83,7 +83,7 @@ SPI_close(SPI *self)
 	self->mode = 0;
 	self->bpw = 0;
 	self->msh = 0;
-	
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -249,7 +249,7 @@ SPI_xfer(SPI *self, PyObject *args)
 		xferptr[ii].rx_buf = (unsigned long)&rxbuf[ii];
 		xferptr[ii].len = 1;
 		xferptr[ii].delay_usecs = delay;
-		xferptr[ii].speed_hz = 0;      
+		xferptr[ii].speed_hz = 0;
 		xferptr[ii].bits_per_word = 0;
 	}
 
@@ -291,7 +291,7 @@ SPI_xfer2(SPI *self, PyObject *args)
 {
 	static char *msg = "Argument must be a list of at least one, "
 				"but not more than 1024 integers";
-	int status;	
+	int status;
 	uint8_t ii, len;
 	PyObject *list;
 	struct spi_ioc_transfer	xfer;
@@ -328,9 +328,9 @@ SPI_xfer2(SPI *self, PyObject *args)
 	xfer.rx_buf = (unsigned long)rxbuf;
 	xfer.len = len;
 	xfer.delay_usecs = 0;
-	xfer.speed_hz = 0;      
+	xfer.speed_hz = 0;
 	xfer.bits_per_word = 0;
-	
+
 	status = ioctl(self->fd, SPI_IOC_MESSAGE(1), &xfer);
 	if (status < 0) {
 		free(txbuf);
@@ -352,6 +352,94 @@ SPI_xfer2(SPI *self, PyObject *args)
 	free(rxbuf);
 
 	Py_INCREF(list);
+	return list;
+}
+
+
+PyDoc_STRVAR(SPI_write_then_read_doc,
+	"write_then_read([values], rx_len) -> [values]\n\n"
+	"Perform half-duplex SPI transaction.\n"
+	"CS will be held active between blocks.\n");
+
+static PyObject *
+SPI_write_then_read(SPI *self, PyObject *args)
+{
+	static char *msg = "Argument must be a list of at least one, "
+				"but not more than 1024 integers";
+	int status;
+	uint8_t ii, len;
+	int rx_len;
+	PyObject *list;
+	struct spi_ioc_transfer	xfer[2];
+	uint8_t *txbuf, *rxbuf;
+
+	if (!PyArg_ParseTuple(args, "Oi:write_then_read", &list, &rx_len))
+		return NULL;
+
+	if (!PyList_Check(list)) {
+		PyErr_SetString(PyExc_TypeError, wrmsg);
+		return NULL;
+	}
+
+	if ((len = PyList_GET_SIZE(list)) > MAXMSGLEN) {
+		PyErr_SetString(PyExc_OverflowError, wrmsg);
+		return NULL;
+	}
+
+	txbuf = malloc(sizeof(__u8) * len);
+	rxbuf = malloc(sizeof(__u8) * rx_len);
+
+	for (ii = 0; ii < len; ii++) {
+		PyObject *val = PyList_GET_ITEM(list, ii);
+		if (!PyInt_Check(val)) {
+			free(txbuf);
+			free(rxbuf);
+			PyErr_SetString(PyExc_TypeError, msg);
+			return NULL;
+		}
+		txbuf[ii] = (__u8)PyInt_AS_LONG(val);
+	}
+
+	xfer[0].tx_buf = (unsigned long)txbuf;
+	xfer[0].rx_buf = 0;
+	xfer[0].len = len;
+	xfer[0].delay_usecs = 0;
+	xfer[0].speed_hz = 0;
+	xfer[0].bits_per_word = 0;
+
+	xfer[1].tx_buf = 0;
+	xfer[1].rx_buf = (unsigned long)rxbuf;
+	xfer[1].len = rx_len;
+	xfer[1].delay_usecs = 0;
+	xfer[1].speed_hz = 0;
+	xfer[1].bits_per_word = 0;
+
+	status = ioctl(self->fd, SPI_IOC_MESSAGE(2), xfer);
+	if (status < 0) {
+		free(txbuf);
+		free(rxbuf);
+		PyErr_SetFromErrno(PyExc_IOError);
+		return NULL;
+	}
+
+
+	list = PyList_New(rx_len);
+
+	for (ii = 0; ii < rx_len; ii++) {
+		PyObject *val = Py_BuildValue("l", (long)rxbuf[ii]);
+		PyList_SET_ITEM(list, ii, val);
+	}
+
+
+	// WA:
+	// in CS_HIGH mode CS isnt pulled to low after transfer
+	// reading 0 bytes doesn't really matter but brings CS down
+	status = read(self->fd, &rxbuf[0], 0);
+
+	free(txbuf);
+	free(rxbuf);
+
+
 	return list;
 }
 
@@ -695,23 +783,12 @@ static PyObject *
 SPI_open(SPI *self, PyObject *args, PyObject *kwds)
 {
 	int bus, device;
-	int max_dt_length = 15;
-	char device_tree_name[max_dt_length];
 	char path[MAXPATH];
 	uint8_t tmp8;
-	uint32_t tmp32;	
+	uint32_t tmp32;
 	static char *kwlist[] = {"bus", "device", NULL};
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:open", kwlist, &bus, &device))
 		return NULL;
-	if (snprintf(device_tree_name, max_dt_length, "ADAFRUIT-SPI%d", bus) >= max_dt_length) {
-		PyErr_SetString(PyExc_OverflowError,
-			"Bus and/or device number is invalid.");
-		return NULL;
-	}
-	if (load_device_tree(device_tree_name) == -1) {
-		PyErr_SetFromErrno(PyExc_IOError);
-		return NULL;
-	}
 
 	if (snprintf(path, MAXPATH, "/dev/spidev%d.%d", bus+1, device) >= MAXPATH) {
 		PyErr_SetString(PyExc_OverflowError,
@@ -781,6 +858,8 @@ static PyMethodDef SPI_methods[] = {
 		SPI_xfer_doc},
 	{"xfer2", (PyCFunction)SPI_xfer2, METH_VARARGS,
 		SPI_xfer2_doc},
+	{"write_then_read", (PyCFunction)SPI_write_then_read, METH_VARARGS,
+		SPI_write_then_read_doc},
 	{NULL},
 };
 
