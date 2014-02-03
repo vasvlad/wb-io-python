@@ -4,7 +4,7 @@ Copyright (c) 2013 Adafruit
 Original RPi.GPIO Author Ben Croston
 Modified for BBIO Author Justin Cooper
 
-This file incorporates work covered by the following copyright and 
+This file incorporates work covered by the following copyright and
 permission notice, all modified code adopts the original license:
 
 Copyright (c) 2013 Ben Croston
@@ -45,9 +45,6 @@ char ctrl_dir[35];
 int get_gpio_number(const char *key, unsigned int *gpio);
 int get_pwm_key(const char *input, char *key);
 int get_adc_ain(const char *key, unsigned int *ain);
-int get_uart_device_tree_name(const char *name, char *dt);
 int build_path(const char *partial_path, const char *prefix, char *full_path, size_t full_path_len);
-int load_device_tree(const char *name);
-int unload_device_tree(const char *name);
 int setup_error;
 int module_setup;

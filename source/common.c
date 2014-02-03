@@ -4,7 +4,7 @@ Copyright (c) 2013 Adafruit
 Original RPi.GPIO Author Ben Croston
 Modified for BBIO Author Justin Cooper
 
-This file incorporates work covered by the following copyright and 
+This file incorporates work covered by the following copyright and
 permission notice, all modified code adopts the original license:
 
 Copyright (c) 2013 Ben Croston
@@ -36,9 +36,9 @@ SOFTWARE.
 int setup_error = 0;
 int module_setup = 0;
 
-typedef struct pins_t { 
-    const char *name; 
-    const char *key; 
+typedef struct pins_t {
+    const char *name;
+    const char *key;
     int gpio;
     int pwm_mux_mode;
     int ain;
@@ -145,10 +145,10 @@ pins_t table[] = {
     { NULL, NULL, 0 }
 };
 
-typedef struct uart_t { 
-    const char *name; 
-    const char *path; 
-    const char *dt; 
+typedef struct uart_t {
+    const char *name;
+    const char *path;
+    const char *dt;
     const char *rx;
     const char *tx;
 } uart_t;
@@ -221,7 +221,7 @@ int lookup_uart_by_name(const char *input_name, char *dt)
         if (strcmp(p->name, input_name) == 0) {
             strncpy(dt, p->dt, FILENAME_BUFFER_SIZE);
             dt[FILENAME_BUFFER_SIZE - 1] = '\0';
-            return 1;                
+            return 1;
         }
     }
     fprintf(stderr, "return 0 lookup_uart_by_name");
@@ -239,7 +239,7 @@ int copy_pwm_key_by_key(const char *input_key, char *key)
 
             strncpy(key, p->key, 7);
             key[7] = '\0';
-            return 1;                
+            return 1;
         }
     }
     return 0;
@@ -265,7 +265,7 @@ int get_pwm_key_by_name(const char *name, char *key)
 int get_gpio_number(const char *key, unsigned int *gpio)
 {
     *gpio = lookup_gpio_by_key(key);
-    
+
     if (!*gpio) {
         *gpio = lookup_gpio_by_name(key);
     }
@@ -285,23 +285,13 @@ int get_pwm_key(const char *input, char *key)
 int get_adc_ain(const char *key, unsigned int *ain)
 {
     *ain = lookup_ain_by_key(key);
-    
+
     if (*ain == -1) {
         *ain = lookup_ain_by_name(key);
 
         if (*ain == -1) {
           return 0;
         }
-    }
-
-    return 1;
-}
-
-int get_uart_device_tree_name(const char *name, char *dt)
-{
-    if (!lookup_uart_by_name(name, dt)) {
-      fprintf(stderr, "return 0 get_uart");
-        return 0;
     }
 
     return 1;
@@ -332,71 +322,3 @@ int build_path(const char *partial_path, const char *prefix, char *full_path, si
     return 0;
 }
 
-
-int load_device_tree(const char *name)
-{
-    FILE *file = NULL;
-    char slots[40];
-    char line[256];
-
-    build_path("/sys/devices", "bone_capemgr", ctrl_dir, sizeof(ctrl_dir));
-    snprintf(slots, sizeof(slots), "%s/slots", ctrl_dir);
-
-    file = fopen(slots, "r+");
-    if (!file) {
-        PyErr_SetFromErrnoWithFilename(PyExc_IOError, slots);
-        return 0;
-    }
-
-    while (fgets(line, sizeof(line), file)) {
-        //the device is already loaded, return 1
-        if (strstr(line, name)) {
-            fclose(file);
-            return 1;
-        }
-    }
-
-    //if the device isn't already loaded, load it, and return
-    fprintf(file, name);
-    fclose(file);
-
-    //0.2 second delay
-    nanosleep((struct timespec[]){{0, 200000000}}, NULL);
-
-    return 1;
-}
-
-int unload_device_tree(const char *name)
-{
-    FILE *file = NULL;
-    char slots[40];
-    char line[256];
-    char *slot_line;
-
-    snprintf(slots, sizeof(slots), "%s/slots", ctrl_dir);
-
-    file = fopen(slots, "r+");
-    if (!file) {
-        PyErr_SetFromErrnoWithFilename(PyExc_IOError, slots);
-        return 0;
-    }
-
-    while (fgets(line, sizeof(line), file)) {
-        //the device is loaded, let's unload it
-        if (strstr(line, name)) {
-            slot_line = strtok(line, ":");
-            //remove leading spaces
-            while(*slot_line == ' ')
-                slot_line++;
-
-            fprintf(file, "-%s", slot_line);
-            fclose(file);
-            return 1;
-        }
-    }
-
-    //not loaded, close file
-    fclose(file);
-
-    return 1;
-}
