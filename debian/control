@@ -1,0 +1,13 @@
+Source: wb-io
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all-dev (>= 2.6.6-3), debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: python-wb-io
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
+Description: A module to control WB IO channels.
+ Controls GPIO, SPI, etc using standard Linux kernel userspace interfaces.
+ No board-specific extensions are used. Half-duplex SPI is supported.
