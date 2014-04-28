@@ -37,7 +37,7 @@ classifiers = ['Development Status :: 3 - Alpha',
                'Topic :: System :: Hardware']
 
 setup(name             = 'WB_IO',
-      version          = '0.0.0',
+      version          = '1.0.0',
       author           = 'Evgeny Boger',
       author_email     = 'boger@contactless.ru',
       description      = 'A module to control WB IO channels',
