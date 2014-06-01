@@ -12,12 +12,6 @@ It has been tested on the 5-20 and 6-6 Angstrom image on the BeagleBone Black.
 
 **Installation on Angstrom**
 
-Easiest::
-
-    /usr/bin/ntpdate -b -s -u pool.ntp.org
-    opkg update && opkg install python-pip python-setuptools
-    pip install Adafruit_BBIO
-    
 Manual::
 
     git clone git://github.com/contactless/wb-io-python.git 
@@ -29,16 +23,6 @@ Manual::
     python setup.py install
 
 **Installation on Ubuntu/Debian**
-
-Easiest::
-
-    sudo ntpdate pool.ntp.org
-    sudo apt-get update
-    sudo apt-get install build-essential python-dev python-pip -y
-    #easy_install -U distribute  //debian only
-    sudo pip install Adafruit_BBIO
-    
-Manual::
 
     sudo ntpdate pool.ntp.org
     sudo apt-get update
