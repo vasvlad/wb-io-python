@@ -11,43 +11,25 @@ It has been tested on the 5-20 and 6-6 Angstrom image on the BeagleBone Black.
 **Note: BBIO has been renamed to Adafruit_BBIO.**
 
 **Installation on Angstrom**
-
-Easiest::
-
-    /usr/bin/ntpdate -b -s -u pool.ntp.org
-    opkg update && opkg install python-pip python-setuptools
-    pip install Adafruit_BBIO
-    
-Manual::
-
-    git clone git://github.com/adafruit/adafruit-beaglebone-io-python.git 
+::
+    git clone git://github.com/contactless/wb-io-python.git 
     #set the date and time 
     /usr/bin/ntpdate -b -s -u pool.ntp.org 
     #install dependency 
     opkg update && opkg install python-distutils 
-    cd adafruit-beaglebone-io-python 
+    cd wb-io-python 
     python setup.py install
 
 **Installation on Ubuntu/Debian**
-
-Easiest::
-
+::
     sudo ntpdate pool.ntp.org
     sudo apt-get update
     sudo apt-get install build-essential python-dev python-pip -y
-    #easy_install -U distribute  //debian only
-    sudo pip install Adafruit_BBIO
-    
-Manual::
-
-    sudo ntpdate pool.ntp.org
-    sudo apt-get update
-    sudo apt-get install build-essential python-dev python-pip -y
-    git clone git://github.com/adafruit/adafruit-beaglebone-io-python.git
-    cd adafruit-beaglebone-io-python
+    git clone git://github.com/contactless/wb-io-python.git 
+    cd wb-io-python
     sudo python setup.py install
     cd ..
-    sudo rm -rf adafruit-beaglebone-io-python
+    sudo rm -rf wb-io-python
     
 **Usage**
 
@@ -57,30 +39,28 @@ Using the library is very similar to the excellent RPi.GPIO library used on the 
 
 Import the library, and setup as GPIO.OUT or GPIO.IN::
 
-    import Adafruit_BBIO.GPIO as GPIO
-    GPIO.setup("P8_14", GPIO.OUT)
+    import WB_IO.GPIO as GPIO
+    GPIO.setup(247, GPIO.OUT)
 
-You can also refer to the pin names::
-
-    GPIO.setup("GPIO0_26", GPIO.OUT)
+Here, 247 is a GPIO id for Relay 1 on Wiren Board Smart Home rev. 3.5. List of all GPIO id avaliable on http://contactless.ru/wiki
 
 **GPIO Output** 
 
 Setup the pin for output, and write GPIO.HIGH or GPIO.LOW. Or you can use 1 or 0.::
 
-    import Adafruit_BBIO.GPIO as GPIO
-    GPIO.setup("P8_14", GPIO.OUT) GPIO.output("P8_14", GPIO.HIGH)
+    import WB_IO.GPIO as GPIO
+    GPIO.setup(247, GPIO.OUT) GPIO.output(247, GPIO.HIGH)
     
 **GPIO Input**
 
 Inputs work similarly to outputs.::
 
-    import Adafruit_BBIO.GPIO as GPIO
-    GPIO.setup("P8_14", GPIO.IN)
+    import WB_IO.GPIO as GPIO
+    GPIO.setup(id, GPIO.IN)
     
 Polling inputs::
     
-    if GPIO.input("P8_14"):
+    if GPIO.input(id):
       print("HIGH")
     else:
       print("LOW")
@@ -91,37 +71,37 @@ Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
 Detecting events::
 
-    GPIO.add_event_detect("P9_12", GPIO.FALLING) 
+    GPIO.add_event_detect(id, GPIO.FALLING) 
     #your amazing code here 
     #detect wherever: 
-    if GPIO.event_detected("P9_12"):
+    if GPIO.event_detected(id):
       print "event detected!"
 
 **PWM**::
 
-    import Adafruit_BBIO.PWM as PWM 
+    import WB_IO.PWM as PWM 
     #PWM.start(channel, duty, freq=2000, polarity=0) 
     #duty values are valid 0 (off) to 100 (on) 
-    PWM.start("P9_14", 50)
-    PWM.set_duty_cycle("P9_14", 25.5) 
-    PWM.set_frequency("P9_14", 10)
+    PWM.start(id, 50)
+    PWM.set_duty_cycle(id, 25.5) 
+    PWM.set_frequency(id, 10)
 
-    PWM.stop("P9_14")
+    PWM.stop(id)
     PWM.cleanup()
     
     #set polarity to 1 on start:
-    PWM.start("P9_14", 50, 2000, 1)
+    PWM.start(id, 50, 2000, 1)
 
 **ADC**::
 
-    import Adafruit_BBIO.ADC as ADC
+    import WB_IO.ADC as ADC
     ADC.setup()
 
     #read returns values 0-1.0 
-    value = ADC.read("P9_40")
+    value = ADC.read(id)
 
     #read_raw returns non-normalized value 
-    value = ADC.read_raw("P9_40")
+    value = ADC.read_raw(id)
 
 **Running tests**
 
