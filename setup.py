@@ -47,7 +47,7 @@ setup(name             = 'WB_IO',
       url              = 'https://github.com/contactless/wb-io-python',
       classifiers      = classifiers,
       packages         = find_packages(),
-      #~ py_modules       = ['Adafruit_I2C'],
+      py_modules       = ['gpio_sysfs'],
       ext_modules      = [Extension('WB_IO.GPIO', ['source/py_gpio.c', 'source/event_gpio.c', 'source/constants.c', 'source/common.c']),
                           Extension('WB_IO.SPI', ['source/spimodule.c', 'source/constants.c', 'source/common.c']),
                          ]
