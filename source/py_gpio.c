@@ -416,7 +416,11 @@ static PyObject *py_gpio_function(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    gpio_get_direction(gpio, &value);
+    if (gpio_get_direction(gpio, &value) != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not get gpio direction, probably not exported");
+        return NULL;
+    }
+
     func = Py_BuildValue("i", value);
     return func;
 }

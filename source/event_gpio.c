@@ -30,6 +30,8 @@ SOFTWARE.
 
 #include <pthread.h>
 #include <sys/epoll.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -78,6 +80,18 @@ int gpio_export(unsigned int gpio)
     int fd, len;
     char str_gpio[10];
     struct gpio_exp *new_gpio, *g;
+    struct stat dirinfo;
+    char dirname[40];
+
+    // create file descriptor of value file
+    snprintf(dirname, sizeof(dirname), "/sys/class/gpio/gpio%d", gpio);
+    if ( (stat( dirname, &dirinfo ) == 0) && (dirinfo.st_mode & S_IFDIR) ) {
+        // gpio directory exists, do nothing
+        return 0;
+    }
+
+
+
 
     if ((fd = open("/sys/class/gpio/export", O_WRONLY)) < 0)
     {
