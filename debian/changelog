@@ -1,3 +1,9 @@
+wb-io (1.1r) stable; urgency=medium
+
+  * Adapted for Raspbery Pi
+  
+ -- Vlad Vasilyeu <vasvlad@gmail.com>  Sun, 19 Oct 2014 05:33:49 +0400
+
 wb-io (1.1) stable; urgency=medium
 
   *  Do not export GPIO in setup if already exported
