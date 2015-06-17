@@ -28,7 +28,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <linux/spi/spidev.h>
+//#include <linux/spi/spidev.h>
+#include "spidev.h"
 #include <linux/types.h>
 #include <sys/ioctl.h>
 #include "common.h"
@@ -251,6 +252,8 @@ SPI_xfer(SPI *self, PyObject *args)
 		xferptr[ii].delay_usecs = delay;
 		xferptr[ii].speed_hz = 0;
 		xferptr[ii].bits_per_word = 0;
+                xferptr[ii].tx_nbits = 0;
+                xferptr[ii].rx_nbits = 0;
 	}
 
 	status = ioctl(self->fd, SPI_IOC_MESSAGE(len), xferptr);
@@ -521,6 +524,9 @@ SPI_write_then_read(SPI *self, PyObject *args)
 	xfer[0].delay_usecs = 0;
 	xfer[0].speed_hz = 2000000;
 	xfer[0].bits_per_word = 8;
+        xfer[0].tx_nbits = 0;
+        xfer[0].rx_nbits = 0;
+
 
 	xfer[1].tx_buf = 0;
 	xfer[1].rx_buf = (unsigned long)rxbuf;
@@ -528,6 +534,9 @@ SPI_write_then_read(SPI *self, PyObject *args)
 	xfer[1].delay_usecs = 0;
 	xfer[1].speed_hz = 2000000;
 	xfer[1].bits_per_word = 8;
+        xfer[1].tx_nbits = 0;
+        xfer[1].rx_nbits = 0;
+
         
 
 	status = ioctl(self->fd, SPI_IOC_MESSAGE(2), xfer);
