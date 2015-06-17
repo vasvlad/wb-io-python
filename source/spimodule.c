@@ -369,6 +369,9 @@ int wiringPiSPIDataRW (int fd, unsigned char *data, int len)
   spi.delay_usecs   = 0;
   spi.speed_hz      = 2000000;
   spi.bits_per_word = 8;
+  spi.tx_nbits = 0;
+  spi.rx_nbits = 0;
+
 
   return ioctl (fd, SPI_IOC_MESSAGE(1), &spi) ;
 }
@@ -451,13 +454,13 @@ SPI_write_read(SPI *self, PyObject *args)
 			return NULL;
 		}
 		txbuf[ii] = (__u8)PyInt_AS_LONG(val);
-//		printf("txbuf[ii] %x\n",(unsigned char)txbuf[ii]);
+	//	printf("txbuf[ii] %x\n",(unsigned char)txbuf[ii]);
 	}
 
         unsigned char result =  rfm69_readReg2(self->fd, txbuf[0]);
 	list = PyList_New(1);
 	for (ii = 0; ii < rx_len; ii++) {
-        	//printf("rxbuf[ii] %l\n", (long)rxbuf[ii]);
+       // 	printf("rxbuf[ii] %l\n", (long)rxbuf[ii]);
 		PyObject *val = Py_BuildValue("i", (char)result);
 		PyList_SET_ITEM(list, ii, val);
 	}
